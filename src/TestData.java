@@ -25,6 +25,8 @@ public class TestData {
             event.put("process", "C:\\Windows\\System32\\CMD.EXE");
             events.add(event);
         }
+
+        events.add(new Event(1102));
         return events;
     }
 }
