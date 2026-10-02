@@ -48,7 +48,7 @@ Se avanza tarea por tarea y se hace un commit al terminar cada una.
         `ProcessBuilder` (añadir `/lf:true` si el origen termina en `.evtx`).
   - [x] Si `wevtutil` termina con error, lanzar `IllegalStateException` con su mensaje.
   - [x] Decodificar la salida con la página de códigos ANSI (`sun.jnu.encoding`).
-  - [ ] Leer el XML con `DocumentBuilder` (DOCTYPE deshabilitado).
+  - [x] Leer el XML con `DocumentBuilder` (DOCTYPE deshabilitado).
   - [ ] Mapear `EventID` → `id`, `ProcessName`/`NewProcessName` → `process`, `ObjectName` → `file`.
   - [ ] Invertir la lista para procesar en orden cronológico.
   - [ ] Leer los eventos la primera vez que se llama a `next()`.

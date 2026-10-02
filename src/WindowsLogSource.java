@@ -1,7 +1,15 @@
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 public class WindowsLogSource implements EventSource {
 
@@ -16,6 +24,26 @@ public class WindowsLogSource implements EventSource {
     @Override
     public Event next() {
         return null;
+    }
+
+    private List<Event> readEvents() {
+        String xml = runWevtutil();
+        List<Event> events = new ArrayList<>();
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            Document document = factory.newDocumentBuilder().parse(new InputSource(new StringReader(xml)));
+
+            NodeList eventNodes = document.getElementsByTagName("Event");
+            for (int i = 0; i < eventNodes.getLength(); i++) {
+                Element eventNode = (Element) eventNodes.item(i);
+                String eventId = eventNode.getElementsByTagName("EventID").item(0).getTextContent();
+                events.add(new Event(Integer.parseInt(eventId.trim())));
+            }
+        } catch (ParserConfigurationException | SAXException | IOException e) {
+            throw new IllegalStateException("Could not read the wevtutil XML: " + e.getMessage());
+        }
+        return events;
     }
 
     private String runWevtutil() {
