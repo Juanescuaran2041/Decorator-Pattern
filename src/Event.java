@@ -1,10 +1,6 @@
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Windows log event that travels through the pipeline.
- * Each decorator can read and modify its data and its score.
- */
 public class Event {
 
     private final int id;
@@ -15,7 +11,6 @@ public class Event {
         this.id = id;
     }
 
-    /** Windows Event ID (4663, 4688, 1102, ...). */
     public int getId() {
         return id;
     }

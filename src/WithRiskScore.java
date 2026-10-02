@@ -8,7 +8,6 @@ public class WithRiskScore extends SourceDecorator {
 
     private static final int ACCESS_THRESHOLD = 100;
 
-    // Accumulated access count by process, without time window (intentional simplification).
     private final Map<String, Integer> accessesByProcess = new HashMap<>();
 
     public WithRiskScore(EventSource source) {

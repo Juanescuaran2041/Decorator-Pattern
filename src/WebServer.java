@@ -14,24 +14,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Web client: serves the frontend from the web/ folder and exposes the analysis at /api/analyze.
- * Uses the HTTP server included in the JDK, without external libraries.
- */
 public class WebServer {
 
     private static final int PORT = 8080;
     private static final int MAX_REAL_EVENTS = 5000;
     private static final Path WEB_FOLDER = Paths.get("web");
 
-    // Only these files are served, so nothing outside web/ can be requested.
     private static final Map<String, String> WEB_FILES = Map.of(
             "/index.html", "text/html; charset=utf-8",
             "/styles.css", "text/css; charset=utf-8",
             "/app.js", "text/javascript; charset=utf-8");
 
     public static void main(String[] args) throws IOException {
-        // It only listens on the local machine: the analysis may read real logs of this computer.
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", PORT), 0);
         server.createContext("/api/analyze", WebServer::handleAnalyze);
         server.createContext("/", WebServer::serveFile);
@@ -54,7 +48,6 @@ public class WebServer {
         }
     }
 
-    /** Builds a new pipeline on each request, because WithRiskScore keeps state. */
     private static EventSource buildPipeline(String origin, List<String> layers) {
         EventSource source;
         if (origin.isEmpty() || origin.equals("test")) {
@@ -63,7 +56,6 @@ public class WebServer {
             source = new WindowsLogSource(origin, MAX_REAL_EVENTS);
         }
 
-        // Active layers are always wrapped in the same order, from inside to outside.
         if (layers.contains("normalization")) {
             source = new WithNormalization(source);
         }
@@ -153,7 +145,6 @@ public class WebServer {
         return params;
     }
 
-    /** Converts a string to JSON, escaping quotes, backslashes (Windows paths) and controls. */
     private static String toJsonString(String text) {
         if (text == null) {
             return "null";

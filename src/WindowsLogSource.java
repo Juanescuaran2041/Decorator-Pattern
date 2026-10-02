@@ -30,7 +30,6 @@ public class WindowsLogSource implements EventSource {
 
     @Override
     public Event next() {
-        // Events are read the first time they are requested.
         if (iterator == null) {
             iterator = readEvents().iterator();
         }
@@ -64,7 +63,6 @@ public class WindowsLogSource implements EventSource {
         }
 
         List<Event> events = parseXml(output);
-        // /rd:true brings the newest first; reversed to process in chronological order.
         Collections.reverse(events);
         return events;
     }
@@ -87,7 +85,6 @@ public class WindowsLogSource implements EventSource {
                     Element field = (Element) fields.item(j);
                     String name = field.getAttribute("Name");
                     String value = field.getTextContent();
-                    // 4663 and 4660 use ProcessName; 4688 uses NewProcessName.
                     if (name.equals("ProcessName") || name.equals("NewProcessName")) {
                         event.put("process", value);
                     } else if (name.equals("ObjectName")) {
@@ -109,7 +106,6 @@ public class WindowsLogSource implements EventSource {
         while ((read = input.read(buffer)) != -1) {
             bytes.write(buffer, 0, read);
         }
-        // wevtutil writes in the Windows ANSI code page (for example windows-1252), not UTF-8.
         String encoding = System.getProperty("sun.jnu.encoding", "windows-1252");
         return new String(bytes.toByteArray(), Charset.forName(encoding));
     }

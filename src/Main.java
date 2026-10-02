@@ -1,10 +1,3 @@
-/**
- * Console client: assembles the pipeline, traverses it and prints the alerts.
- *
- * Without arguments it uses the test data. With one argument it reads real Windows events:
- *   java -cp out Main Security              (requires administrator console)
- *   java -cp out Main C:\path\file.evtx
- */
 public class Main {
 
     private static final int MAX_REAL_EVENTS = 5000;
@@ -17,7 +10,6 @@ public class Main {
             baseSource = new InMemorySource(TestData.generate());
         }
 
-        // From outside to inside: score -> filter -> enrichment -> normalization -> source.
         EventSource pipeline =
                 new WithRiskScore(
                         new WithFilter(
@@ -38,7 +30,6 @@ public class Main {
                 }
             }
         } catch (IllegalStateException e) {
-            // For example, reading the Security log without administrator rights.
             System.out.println("Error: " + e.getMessage());
             return;
         }
