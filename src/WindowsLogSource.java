@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -55,6 +56,7 @@ public class WindowsLogSource implements EventSource {
         } catch (ParserConfigurationException | SAXException | IOException e) {
             throw new IllegalStateException("Could not read the wevtutil XML: " + e.getMessage());
         }
+        Collections.reverse(events);
         return events;
     }
 

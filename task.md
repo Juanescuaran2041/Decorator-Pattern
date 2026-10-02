@@ -50,7 +50,7 @@ Se avanza tarea por tarea y se hace un commit al terminar cada una.
   - [x] Decodificar la salida con la página de códigos ANSI (`sun.jnu.encoding`).
   - [x] Leer el XML con `DocumentBuilder` (DOCTYPE deshabilitado).
   - [x] Mapear `EventID` → `id`, `ProcessName`/`NewProcessName` → `process`, `ObjectName` → `file`.
-  - [ ] Invertir la lista para procesar en orden cronológico.
+  - [x] Invertir la lista para procesar en orden cronológico.
   - [ ] Leer los eventos la primera vez que se llama a `next()`.
 
 ### 3. Decorator abstracto
