@@ -353,30 +353,196 @@ The page (`web/index.html`) shows:
 `app.js` reads the form, calls `/api/analyze` with `fetch` and renders the result. All the
 analysis logic runs in Java; the frontend only displays data.
 
-## Build and run
+## Deployment guide
 
-### From IntelliJ IDEA
-- **Web version**: run `WebServer` and open <http://localhost:8080>.
-- **Console version**: run `Main` (with an optional argument to use a real log).
+This guide covers everything from a fresh machine to a scheduled analysis of the real Security
+log. Steps 1 to 5 are enough to run the project for class; steps 6 to 9 deploy it on a Windows
+machine that should be monitored.
 
-The working directory must be the project root, so the server can find `web/`.
+> The web version (`WebServer` and `web/`) is part of tasks 7 to 10. Until those tasks are merged,
+> only the console version (`Main`) is available. See [task.md](task.md) for the current progress.
 
-### From the terminal (in the project root)
+### 1. Requirements
+
+| Tool | Version | Check |
+|------|---------|-------|
+| JDK (Temurin, Oracle or any OpenJDK) | 11 or newer | `java -version` and `javac -version` |
+| Git | any | `git --version` |
+| Windows | 10 or 11 | only needed to read real logs; test data runs on any OS |
+| IntelliJ IDEA (optional) | Community or Ultimate | — |
+
+No Maven, Gradle or extra libraries are needed. `wevtutil` comes with Windows.
+
+### 2. Get the code
+
+```bash
+git clone https://github.com/Juanescuaran2041/Decorator-Pattern.git
+cd Decorator-Pattern
+```
+
+All the commands below are run from the project root (the folder that contains `src/`).
+
+### 3. Build
 
 ```bash
 javac -encoding UTF-8 -d out src/*.java
+```
 
-# Web version
-java -cp out WebServer
-# open http://localhost:8080
+- Works in Git Bash, `cmd` and PowerShell.
+- `-encoding UTF-8` keeps the build independent of the system code page.
+- The compiled classes go to `out/`, which is ignored by Git.
+- To check Java 11 compatibility with a newer JDK, add `--release 11`.
 
-# Console version with test data
+### 4. Run the console version
+
+```bash
+# Test data from the case study
 java -cp out Main
 
-# Console version with real logs
+# An exported .evtx file (no administrator rights needed)
 java -cp out Main C:\logs\security.evtx
-java -cp out Main Security        # requires an administrator console
+
+# The live Security log (requires a console opened as administrator)
+java -cp out Main Security
 ```
+
+Expected output with the test data (last lines):
+
+```
+ALERT score=80 category=FILE_ACCESS process=evil.exe file=document_120.docx.locked
+ALERT score=50 category=LOG_CLEARED process=null file=null
+----------------------------------------
+Processed events: 129
+Alerts: 21
+```
+
+### 5. Run from IntelliJ IDEA
+
+1. **File → Open** and select the project folder.
+2. **File → Project Structure → Project**: choose a JDK 11 or newer as the SDK.
+3. Open `src/Main.java` and click the green run arrow next to `main`.
+4. To read a real log: **Run → Edit Configurations → Main → Program arguments**, for example
+   `Security` or `C:\logs\security.evtx`.
+5. For the web version, run `WebServer` the same way. Check that **Working directory** is
+   `$PROJECT_DIR$`, otherwise the server cannot find `web/`. Then open <http://localhost:8080>.
+
+### 6. Package as a JAR
+
+```bash
+javac -encoding UTF-8 -d out src/*.java
+jar --create --file pipeline-logs.jar --main-class Main -C out .
+```
+
+Run it:
+
+```bash
+java -jar pipeline-logs.jar                      # console, test data
+java -jar pipeline-logs.jar Security             # console, live Security log (administrator)
+java -cp pipeline-logs.jar WebServer             # web version (web/ must be next to the JAR)
+```
+
+### 7. Prepare the Windows machine to monitor
+
+Windows does not record file access or process creation by default. In a console opened as
+administrator:
+
+```bat
+auditpol /set /subcategory:"File System" /success:enable
+auditpol /set /subcategory:"Process Creation" /success:enable
+```
+
+The subcategory names follow the Windows language. On a Spanish Windows use
+`auditpol /list /subcategory:*` to see the exact names.
+
+Then add an audit entry (SACL) to every folder that should be watched, for example
+`C:\Users\<user>\Documents`:
+
+1. Right click the folder → **Properties → Security → Advanced → Auditing → Add**.
+2. **Principal**: `Everyone`. **Type**: `Success`.
+3. **Advanced permissions**: `Create files / write data`, `Delete`, `Read data`.
+4. Apply. From now on Windows writes events 4663 and 4660 for that folder.
+
+Check that events arrive:
+
+```bat
+wevtutil qe Security /q:"*[System[(EventID=4663)]]" /c:5 /rd:true /f:text
+```
+
+### 8. Deploy the program
+
+1. Create a folder, for example `C:\PipelineLogs`.
+2. Copy `pipeline-logs.jar` into it (and the `web/` folder if the web version is used).
+3. Make sure `java` is on the system `PATH` (`where java`).
+4. Run a first analysis as administrator:
+
+   ```bat
+   cd C:\PipelineLogs
+   java -jar pipeline-logs.jar Security
+   ```
+
+If administrator rights are not allowed on that machine, an administrator can export the log
+and the analysis can run anywhere:
+
+```bat
+wevtutil epl Security C:\PipelineLogs\security.evtx
+java -jar pipeline-logs.jar C:\PipelineLogs\security.evtx
+```
+
+### 9. Schedule the analysis
+
+Run the analysis every hour as `SYSTEM` (which can read the Security log) and append the result to
+a file. In a console opened as administrator:
+
+```bat
+schtasks /create /tn "PipelineLogsDecorator" /sc hourly /ru SYSTEM ^
+  /tr "cmd /c cd /d C:\PipelineLogs && java -jar pipeline-logs.jar Security >> alerts.log"
+```
+
+- Run it once now: `schtasks /run /tn "PipelineLogsDecorator"`.
+- Check the result in `C:\PipelineLogs\alerts.log`.
+- Remove it: `schtasks /delete /tn "PipelineLogsDecorator" /f`.
+
+Each run reads the latest 5000 events and the count has no time window, so the same events can be
+reported again in the next run. This is one of the known limitations of the project.
+
+### 10. Deployment checklist
+
+- [ ] `java -version` shows 11 or newer.
+- [ ] `java -jar pipeline-logs.jar` prints 129 processed events and 21 alerts.
+- [ ] `auditpol /get /category:*` shows *File System* and *Process Creation* with `Success`.
+- [ ] The watched folders have an audit entry and `wevtutil` returns 4663 events.
+- [ ] `java -jar pipeline-logs.jar Security` runs as administrator without errors.
+- [ ] The scheduled task exists and writes to `alerts.log`.
+
+### 11. Troubleshooting
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| `javac` is not recognized | JDK not installed or not on `PATH` | Install a JDK and add its `bin` folder to `PATH`. |
+| `error: unmappable character for encoding` | Build without `-encoding UTF-8` | Add `-encoding UTF-8` to `javac`. |
+| `Error: wevtutil could not read 'Security': ... denied` | Console without administrator rights | Open the console as administrator, or analyze an exported `.evtx`. |
+| `Processed events: 0` with a real log | No 4663 / 4660 / 4688 / 1102 events in the log | Enable auditing and add the SACL (step 7). |
+| `Could not run wevtutil` | Not running on Windows | Use the test data, or run on Windows. |
+| `Could not find or load main class Main` | Wrong classpath or not built | Build again and run from the project root with `-cp out`. |
+| Web page shows a "web/ not found" error | Wrong working directory | Run `WebServer` from the project root (`$PROJECT_DIR$` in IntelliJ). |
+| Port 8080 already in use | Another program uses the port | Close that program or change the port in `WebServer`. |
+
+## Contributing workflow
+
+This is how the team works on the project and keeps this README up to date:
+
+1. **One branch per task** from `main`, for example `feature/builder_n_webserver` for task 7.
+2. **One commit per completed subtask** of [task.md](task.md), ticking its checkbox in the same
+   commit. Commit messages in English, in the imperative mood ("Add WithFilter decorator").
+3. **Build before every commit**: `javac --release 11 -encoding UTF-8 -d out src/*.java`.
+4. **Code rules**: English names, no comments, no unnecessary methods, one class per file.
+5. **Update the README in the same branch** when a change affects it:
+   - a new class → *Project structure* and the pattern tables,
+   - a new command or option → *Deployment guide*,
+   - a new endpoint or field → *Backend API*,
+   - a known problem → *Troubleshooting*.
+6. **Push the branch and open a pull request** to `main`; merge it once the expected result
+   (129 processed events, 21 alerts) is confirmed.
 
 ## Test data
 
