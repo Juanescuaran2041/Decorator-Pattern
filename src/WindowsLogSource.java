@@ -38,7 +38,19 @@ public class WindowsLogSource implements EventSource {
             for (int i = 0; i < eventNodes.getLength(); i++) {
                 Element eventNode = (Element) eventNodes.item(i);
                 String eventId = eventNode.getElementsByTagName("EventID").item(0).getTextContent();
-                events.add(new Event(Integer.parseInt(eventId.trim())));
+                Event event = new Event(Integer.parseInt(eventId.trim()));
+
+                NodeList fields = eventNode.getElementsByTagName("Data");
+                for (int j = 0; j < fields.getLength(); j++) {
+                    Element field = (Element) fields.item(j);
+                    String name = field.getAttribute("Name");
+                    if (name.equals("ProcessName") || name.equals("NewProcessName")) {
+                        event.put("process", field.getTextContent());
+                    } else if (name.equals("ObjectName")) {
+                        event.put("file", field.getTextContent());
+                    }
+                }
+                events.add(event);
             }
         } catch (ParserConfigurationException | SAXException | IOException e) {
             throw new IllegalStateException("Could not read the wevtutil XML: " + e.getMessage());
