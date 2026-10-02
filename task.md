@@ -33,11 +33,11 @@ Se avanza tarea por tarea y se hace un commit al terminar cada una.
 
 ### 1. Clase de datos
 
-- [ ] `Event`
-  - [ ] `final int id` (Event ID de Windows).
-  - [ ] `Map<String, String> data` (`process`, `file`, `category`).
-  - [ ] `int score` iniciado en 0.
-  - [ ] Métodos `getId()`, `get(key)`, `put(key, value)`, `getScore()`, `addScore(points)`.
+- [x] `Event`
+  - [x] `final int id` (Event ID de Windows).
+  - [x] `Map<String, String> data` (`process`, `file`, `category`).
+  - [x] `int score` iniciado en 0.
+  - [x] Métodos `getId()`, `get(key)`, `put(key, value)`, `getScore()`, `addScore(points)`.
 
 ### 2. Component y ConcreteComponents
 
