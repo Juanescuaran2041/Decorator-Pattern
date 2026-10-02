@@ -41,7 +41,7 @@ Se avanza tarea por tarea y se hace un commit al terminar cada una.
 
 ### 2. Component y ConcreteComponents
 
-- [ ] `EventSource`: interfaz con `Event next()` (devuelve `null` al terminar).
+- [x] `EventSource`: interfaz con `Event next()` (devuelve `null` al terminar).
 - [ ] `InMemorySource`: recibe `List<Event>` y la recorre con un `Iterator`.
 - [ ] `WindowsLogSource(origin, maxEvents)`:
   - [ ] Ejecutar `wevtutil qe <origin> /c:<maxEvents> /rd:true /f:xml /e:Events` con
