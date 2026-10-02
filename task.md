@@ -60,7 +60,7 @@ Work goes task by task, with one commit for each completed subtask.
 
 ### 4. Concrete decorators
 
-- [ ] `WithNormalization`: `process` → executable name in lower case
+- [x] `WithNormalization`: `process` → executable name in lower case
       (`C:\Windows\System32\CMD.EXE` → `cmd.exe`).
 - [ ] `WithEnrichment`: `category` field based on the Event ID
       (4663 `FILE_ACCESS`, 4660 `FILE_DELETE`, 4688 `PROCESS_CREATION`,
