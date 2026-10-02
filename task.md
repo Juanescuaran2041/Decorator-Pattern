@@ -69,7 +69,7 @@ Work goes task by task, with one commit for each completed subtask.
 - [ ] `WithRiskScore` (stateful):
   - [x] Count `FILE_ACCESS` events per process in `Map<String, Integer> accessCountWithoutTimeWindow`;
         over 100, +50.
-  - [ ] `file` ends with `.locked`, `.encrypted` or `.crypt`: +30.
+  - [x] `file` ends with `.locked`, `.encrypted` or `.crypt`: +30.
   - [ ] Category `LOG_CLEARED`: +50.
 
 ### 5. Test data and Factory

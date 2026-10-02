@@ -20,12 +20,20 @@ public class WithRiskScore extends SourceDecorator {
 
         String category = event.get("category");
         String process = event.get("process");
+        String file = event.get("file");
 
         if ("FILE_ACCESS".equals(category) && process != null) {
             int count = accessCountWithoutTimeWindow.getOrDefault(process, 0) + 1;
             accessCountWithoutTimeWindow.put(process, count);
             if (count > ACCESS_LIMIT) {
                 event.addScore(50);
+            }
+        }
+
+        if (file != null) {
+            String fileName = file.toLowerCase();
+            if (fileName.endsWith(".locked") || fileName.endsWith(".encrypted") || fileName.endsWith(".crypt")) {
+                event.addScore(30);
             }
         }
         return event;
