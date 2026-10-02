@@ -27,6 +27,10 @@ public class TestData {
         }
 
         events.add(new Event(1102));
+
+        for (int i = 1; i <= 10; i++) {
+            events.add(new Event(4624));
+        }
         return events;
     }
 }
