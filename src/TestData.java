@@ -19,6 +19,12 @@ public class TestData {
             event.put("file", "report_" + i + ".docx");
             events.add(event);
         }
+
+        for (int i = 1; i <= 3; i++) {
+            Event event = new Event(4688);
+            event.put("process", "C:\\Windows\\System32\\CMD.EXE");
+            events.add(event);
+        }
         return events;
     }
 }
