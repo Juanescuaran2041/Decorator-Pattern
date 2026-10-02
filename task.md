@@ -1,165 +1,166 @@
-# Tareas — PipelineLogsDecorator
+# Tasks — PipelineLogsDecorator
 
-Lista de trabajo para implementar el caso de estudio del patrón **Decorator** (con **Factory** y
-**Builder** como apoyo), con backend en Java (lógica) y frontend web (HTML + CSS + JavaScript).
-Ver [README.md](README.md) para el contexto completo.
+Work list to implement the **Decorator** pattern case study (with **Factory** and **Builder** as
+support), with a Java backend (logic) and a web frontend (HTML + CSS + JavaScript).
+See [README.md](README.md) for the full context.
 
-Se avanza tarea por tarea y se hace un commit al terminar cada una.
+Work goes task by task, with one commit for each completed subtask.
 
-## Reglas generales
+## General rules
 
-- [ ] Backend en Java puro, compatible con Java 11 (`switch` clásico, sin `record`).
-- [ ] Sin Maven, Gradle ni librerías externas (solo JDK: `HttpServer`, `javax.xml`, `ProcessBuilder`).
-- [ ] Frontend en HTML, CSS y JavaScript sin frameworks ni dependencias.
-- [ ] Toda la lógica de análisis en Java; el frontend solo pide y muestra datos.
-- [ ] Clases Java directamente en `src/`, una clase por archivo; frontend en `web/`.
-- [ ] Todo el código en inglés (clases, métodos, variables, valores, interfaz web).
-- [ ] Sin comentarios en el código; los nombres explican el comportamiento.
-- [ ] Código simple, de nivel de tercer semestre, sin métodos innecesarios.
-- [ ] Cada decorador sigue la delegación explícita:
-      delegar → verificar `null` → añadir comportamiento → devolver.
-- [ ] No extraer un Template Method.
+- [ ] Plain Java backend, Java 11 compatible (classic `switch`, no `record`).
+- [ ] No Maven, Gradle or external libraries (JDK only: `HttpServer`, `javax.xml`, `ProcessBuilder`).
+- [ ] Frontend in HTML, CSS and JavaScript with no frameworks or dependencies.
+- [ ] All analysis logic in Java; the frontend only requests and displays data.
+- [ ] Java classes directly in `src/`, one class per file; frontend in `web/`.
+- [ ] Everything in English (classes, methods, variables, values, web UI and documentation).
+- [ ] No comments in the code; names explain the behavior.
+- [ ] Simple, third-semester-level code, with no unnecessary methods.
+- [ ] Every decorator follows explicit delegation:
+      delegate → check `null` → add behavior → return.
+- [ ] Do not extract a Template Method.
 
-## Evaluación: lectura de logs reales de Windows
+## Feasibility study: reading real Windows logs
 
-- [x] Comprobar `wevtutil` sobre el log Security sin administrador → `Acceso denegado`.
-- [x] Comprobar `wevtutil` sobre el log System → devuelve XML.
-- [x] Exportar un `.evtx` (`wevtutil epl`) y leerlo con `/lf:true` sin administrador → funciona.
-- [x] Revisar la codificación de la salida → ANSI (`windows-1252`), no UTF-8.
-- [x] Verificar que `/e:<raíz>` produce un XML con raíz única.
-- [x] Conclusión documentada en el README: viable con `wevtutil` + `javax.xml`, sin librerías externas.
+- [x] Run `wevtutil` on the Security log without administrator rights → access denied.
+- [x] Run `wevtutil` on the System log → returns XML.
+- [x] Export an `.evtx` file (`wevtutil epl`) and read it with `/lf:true` without administrator rights → works.
+- [x] Check the output encoding → ANSI (`windows-1252`), not UTF-8.
+- [x] Check that `/e:<root>` produces XML with a single root.
+- [x] Conclusion documented in the README: feasible with `wevtutil` + `javax.xml`, no external libraries.
 
 ## Backend
 
-### 1. Clase de datos
+### 1. Data class
 
 - [x] `Event`
-  - [x] `final int id` (Event ID de Windows).
+  - [x] `final int id` (Windows Event ID).
   - [x] `Map<String, String> data` (`process`, `file`, `category`).
-  - [x] `int score` iniciado en 0.
-  - [x] Métodos `getId()`, `get(key)`, `put(key, value)`, `getScore()`, `addScore(points)`.
+  - [x] `int score` starting at 0.
+  - [x] Methods `getId()`, `get(key)`, `put(key, value)`, `getScore()`, `addScore(points)`.
 
-### 2. Component y ConcreteComponents
+### 2. Component and ConcreteComponents
 
-- [x] `EventSource`: interfaz con `Event next()` (devuelve `null` al terminar).
-- [x] `InMemorySource`: recibe `List<Event>` y la recorre con un `Iterator`.
+- [x] `EventSource`: interface with `Event next()` (returns `null` at the end).
+- [x] `InMemorySource`: receives a `List<Event>` and walks it with an `Iterator`.
 - [x] `WindowsLogSource(origin, maxEvents)`:
-  - [x] Ejecutar `wevtutil qe <origin> /c:<maxEvents> /rd:true /f:xml /e:Events` con
-        `ProcessBuilder` (añadir `/lf:true` si el origen termina en `.evtx`).
-  - [x] Si `wevtutil` termina con error, lanzar `IllegalStateException` con su mensaje.
-  - [x] Decodificar la salida con la página de códigos ANSI (`sun.jnu.encoding`).
-  - [x] Leer el XML con `DocumentBuilder` (DOCTYPE deshabilitado).
-  - [x] Mapear `EventID` → `id`, `ProcessName`/`NewProcessName` → `process`, `ObjectName` → `file`.
-  - [x] Invertir la lista para procesar en orden cronológico.
-  - [x] Leer los eventos la primera vez que se llama a `next()`.
+  - [x] Run `wevtutil qe <origin> /c:<maxEvents> /rd:true /f:xml /e:Events` with
+        `ProcessBuilder` (add `/lf:true` when the origin ends with `.evtx`).
+  - [x] If `wevtutil` fails, throw `IllegalStateException` with its message.
+  - [x] Decode the output with the ANSI code page (`sun.jnu.encoding`).
+  - [x] Read the XML with `DocumentBuilder` (DOCTYPE disabled).
+  - [x] Map `EventID` → `id`, `ProcessName`/`NewProcessName` → `process`, `ObjectName` → `file`.
+  - [x] Reverse the list to process events in chronological order.
+  - [x] Read the events the first time `next()` is called.
 
-### 3. Decorator abstracto
+### 3. Abstract decorator
 
-- [ ] `SourceDecorator`: clase abstracta que implementa `EventSource`, con
-      `protected final EventSource source` recibida por constructor.
+- [x] `SourceDecorator`: abstract class that implements `EventSource`, with
+      `protected final EventSource source` received in the constructor.
 
-### 4. Decoradores concretos
+### 4. Concrete decorators
 
-- [ ] `WithNormalization`: `process` → nombre del ejecutable en minúsculas
+- [x] `WithNormalization`: `process` → executable name in lower case
       (`C:\Windows\System32\CMD.EXE` → `cmd.exe`).
-- [ ] `WithEnrichment`: campo `category` según Event ID
+- [x] `WithEnrichment`: `category` field based on the Event ID
       (4663 `FILE_ACCESS`, 4660 `FILE_DELETE`, 4688 `PROCESS_CREATION`,
-      1102 `LOG_CLEARED`, otro `OTHER`).
-- [ ] `WithFilter`: ciclo que descarta eventos `OTHER` hasta encontrar uno válido o `null`.
-- [ ] `WithRiskScore` (con estado):
-  - [ ] Conteo de `FILE_ACCESS` por proceso en `Map<String, Integer> accessCountWithoutTimeWindow`;
-        si supera 100, +50.
-  - [ ] `file` termina en `.locked`, `.encrypted` o `.crypt`: +30.
-  - [ ] Categoría `LOG_CLEARED`: +50.
+      1102 `LOG_CLEARED`, other `OTHER`).
+- [x] `WithFilter`: loop that drops `OTHER` events until it finds a valid one or `null`.
+- [x] `WithRiskScore` (stateful):
+  - [x] Count `FILE_ACCESS` events per process in `Map<String, Integer> accessCountWithoutTimeWindow`;
+        over 100, +50.
+  - [x] `file` ends with `.locked`, `.encrypted` or `.crypt`: +30.
+  - [x] Category `LOG_CLEARED`: +50.
 
-### 5. Datos de prueba y Factory
+### 5. Test data and Factory
 
-- [ ] `TestData.generate()` devuelve una `List<Event>` nueva en cada llamada:
-  - [ ] 120 eventos 4663 de `C:\Users\victima\AppData\Local\Temp\EVIL.EXE` sobre `documento_N.docx.locked`.
-  - [ ] 5 eventos 4663 de `C:\Program Files\Office\WINWORD.EXE` sobre archivos `.docx`.
-  - [ ] 3 eventos 4688 de `C:\Windows\System32\CMD.EXE`.
-  - [ ] 1 evento 1102 (borrado del log de auditoría).
-  - [ ] 10 eventos 4624 (inicio de sesión).
-- [ ] `EventSourceFactory.create(origin)`: `"test"` o vacío → `InMemorySource`;
-      otro valor → `WindowsLogSource(origin, 5000)`.
+- [x] `TestData.generate()` returns a new `List<Event>` on every call:
+  - [x] 120 events 4663 from `C:\Users\victim\AppData\Local\Temp\EVIL.EXE` on `document_N.docx.locked`.
+  - [x] 5 events 4663 from `C:\Program Files\Office\WINWORD.EXE` on regular `.docx` files.
+  - [x] 3 events 4688 from `C:\Windows\System32\CMD.EXE`.
+  - [x] 1 event 1102 (audit log cleared).
+  - [x] 10 events 4624 (logon).
+- [x] `EventSourceFactory.create(origin)`: `"test"` or empty → `InMemorySource`;
+      any other value → `WindowsLogSource(origin, 5000)`.
 
-### 6. Main (consola)
+### 6. Main (console)
 
-- [ ] Origen: `args[0]` si existe, si no `"test"`; crear la fuente con `EventSourceFactory`.
-- [ ] Ensamblar el pipeline a mano (de afuera hacia adentro):
+- [x] Origin: `args[0]` if present, otherwise `"test"`; create the source with `EventSourceFactory`.
+- [x] Assemble the pipeline by hand (outside to inside):
       `WithRiskScore → WithFilter → WithEnrichment → WithNormalization → Source`.
-- [ ] Imprimir una línea `ALERT` por cada evento con puntaje >= 50
-      (puntaje, categoría, proceso y archivo).
-- [ ] Imprimir resumen: eventos procesados y número de alertas.
-- [ ] Si la fuente falla, mostrar `Error: <mensaje>` en lugar de la traza.
+- [x] Print an `ALERT` line for every event with a score >= 50
+      (score, category, process and file).
+- [x] Print a summary: processed events and number of alerts.
+- [x] If the source fails, print `Error: <message>` instead of the stack trace.
 
-### 7. Builder y WebServer
+### 7. Builder and WebServer
 
-- [ ] `PipelineBuilder(source)` con `withNormalization()`, `withEnrichment()`, `withFilter()`,
-      `withRiskScore()` y `build()`; `build()` envuelve siempre en el orden correcto.
-- [ ] `WebServer`: `HttpServer` en `127.0.0.1:8080`.
-- [ ] Servir solo `web/index.html`, `web/styles.css` y `web/app.js` (lista cerrada) con el
-      `Content-Type` correcto; `/` → `index.html`.
+- [ ] `PipelineBuilder(source)` with `withNormalization()`, `withEnrichment()`, `withFilter()`,
+      `withRiskScore()` and `build()`; `build()` always wraps in the correct order.
+- [ ] `WebServer`: `HttpServer` on `127.0.0.1:8080`.
+- [ ] Serve only `web/index.html`, `web/styles.css` and `web/app.js` (fixed list) with the right
+      `Content-Type`; `/` → `index.html`.
 - [ ] `GET /api/analyze?origin=...&layers=...`:
-  - [ ] `origin`: `test` (por defecto), nombre de log o ruta `.evtx`.
-  - [ ] `layers`: `normalization`, `enrichment`, `filter`, `riskScore` (por defecto, todas).
-  - [ ] Crear la fuente con `EventSourceFactory` y un pipeline nuevo con `PipelineBuilder`
-        en cada petición.
-  - [ ] Responder JSON con `origin`, `processed`, `alerts` y `events`
+  - [ ] `origin`: `test` (default), log name or `.evtx` path.
+  - [ ] `layers`: `normalization`, `enrichment`, `filter`, `riskScore` (default: all).
+  - [ ] Create the source with `EventSourceFactory` and a new pipeline with `PipelineBuilder`
+        on every request.
+  - [ ] Respond with JSON containing `origin`, `processed`, `alerts` and `events`
         (`id`, `category`, `process`, `file`, `score`, `alert`).
-  - [ ] Construir el JSON a mano escapando `\` y `"`; ausentes como `null`.
-  - [ ] Si la fuente falla, responder `400` con `{"error": "..."}`.
-- [ ] Imprimir la URL al iniciar (`http://localhost:8080`).
+  - [ ] Build the JSON by hand, escaping `\` and `"`; missing fields as `null`.
+  - [ ] If the source fails, respond `400` with `{"error": "..."}`.
+- [ ] Print the URL on startup (`http://localhost:8080`).
 
 ## Frontend
 
 ### 8. `web/index.html`
 
-- [ ] Selector de origen: datos de prueba o log de Windows (campo de texto para `Security` o ruta `.evtx`).
-- [ ] Panel del pipeline con las capas en orden y una casilla por capa (todas marcadas).
-- [ ] Botón **Run analysis**.
-- [ ] Tarjetas de resumen: eventos procesados y alertas.
-- [ ] Tabla de alertas: puntaje, Event ID, categoría, proceso, archivo.
-- [ ] Tabla de todos los eventos procesados.
-- [ ] Pie con los nombres de los desarrolladores.
+- [ ] Origin selector: test data or Windows log (text field for `Security` or an `.evtx` path).
+- [ ] Pipeline panel with the layers in order and one checkbox per layer (all checked).
+- [ ] **Run analysis** button.
+- [ ] Summary cards: processed events and alerts.
+- [ ] Alerts table: score, Event ID, category, process, file.
+- [ ] Table with every processed event.
+- [ ] Footer with the developers' names.
 
 ### 9. `web/styles.css`
 
-- [ ] Diseño limpio y legible, con modo claro y oscuro; resaltar las filas con alerta.
-- [ ] Usable en pantallas pequeñas (las tablas hacen scroll dentro de su contenedor).
+- [ ] Clean, readable design with light and dark mode; highlight rows with an alert.
+- [ ] Usable on small screens (tables scroll inside their container).
 
 ### 10. `web/app.js`
 
-- [ ] Leer origen y casillas, llamar a `/api/analyze` con `fetch`.
-- [ ] Pintar resumen y tablas con los datos recibidos (insertar texto, no HTML, para no
-      ejecutar contenido de los logs).
-- [ ] Mostrar el mensaje de error del servidor o un aviso si no responde.
+- [ ] Read the origin and checkboxes, call `/api/analyze` with `fetch`.
+- [ ] Render the summary and tables from the received data (insert text, not HTML, so log
+      content is never executed).
+- [ ] Show the server error message, or a notice if it does not respond.
 
-## Verificación
+## Verification
 
-- [ ] Compilar: `javac -encoding UTF-8 -d out src/*.java`
-- [ ] Consola: `java -cp out Main`
-  - [ ] Los primeros 100 eventos de `evil.exe` suman 30 y no alertan.
-  - [ ] Desde el evento 101, `evil.exe` suma 80 y alerta (20 alertas).
-  - [ ] El evento 1102 alerta con 50 puntos.
-  - [ ] `winword.exe` y `cmd.exe` no alertan.
-  - [ ] Los eventos 4624 no aparecen.
-  - [ ] Resumen: 129 eventos procesados, 21 alertas.
-- [ ] Consola con logs reales:
-  - [ ] `java -cp out Main Security` sin administrador → mensaje `Acceso denegado`, sin traza.
-  - [ ] `java -cp out Main System` → se procesa sin errores.
-  - [ ] `java -cp out Main C:\ruta\archivo.evtx` → se procesa sin errores.
-- [ ] Web: `java -cp out WebServer` y abrir <http://localhost:8080>
-  - [ ] Con todas las capas: 129 procesados y 21 alertas (igual que la consola).
-  - [ ] Ejecutar dos veces seguidas da el mismo resultado (el estado no se arrastra).
-  - [ ] Sin `filter`: 139 procesados, 21 alertas.
-  - [ ] Sin `enrichment`: 139 procesados, 0 alertas.
-  - [ ] Sin `normalization`: procesos con ruta completa y JSON válido.
-  - [ ] Origen `Security` sin administrador: se muestra el mensaje de error.
+- [ ] Build: `javac -encoding UTF-8 -d out src/*.java`
+- [ ] Console: `java -cp out Main`
+  - [ ] The first 100 `evil.exe` events score 30 and do not raise an alert.
+  - [ ] From event 101 on, `evil.exe` scores 80 and raises an alert (20 alerts).
+  - [ ] Event 1102 raises an alert with 50 points.
+  - [ ] `winword.exe` and `cmd.exe` do not raise alerts.
+  - [ ] The 4624 events do not appear.
+  - [ ] Summary: 129 processed events, 21 alerts.
+- [ ] Console with real logs:
+  - [ ] `java -cp out Main Security` without administrator rights → access denied message, no stack trace.
+  - [ ] `java -cp out Main System` → processed with no errors.
+  - [ ] `java -cp out Main C:\path\file.evtx` → processed with no errors.
+- [ ] Web: `java -cp out WebServer` and open <http://localhost:8080>
+  - [ ] With every layer: 129 processed and 21 alerts (same as the console).
+  - [ ] Running twice in a row gives the same result (no state carried over).
+  - [ ] Without `filter`: 139 processed, 21 alerts.
+  - [ ] Without `enrichment`: 139 processed, 0 alerts.
+  - [ ] Without `normalization`: processes as full paths and valid JSON.
+  - [ ] Origin `Security` without administrator rights: the error message is shown.
 
-## Documentación
+## Documentation
 
-- [x] `README.md` con descripción, patrones (Decorator, Factory, Builder), arquitectura,
-      evaluación de logs reales, API, ejecución y desarrolladores.
-- [x] `task.md` con la lista de tareas.
-- [x] Explicación de por qué importa el orden de los decoradores (incluida en el README).
+- [x] `README.md` with description, patterns (Decorator, Factory, Builder), architecture,
+      real log feasibility study, API, build/run instructions and developers.
+- [x] `task.md` with the task list.
+- [x] Explanation of why the decorator order matters (in the README).
+- [x] Documentation translated to English.
