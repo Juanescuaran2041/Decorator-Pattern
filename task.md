@@ -44,7 +44,7 @@ Se avanza tarea por tarea y se hace un commit al terminar cada una.
 - [x] `EventSource`: interfaz con `Event next()` (devuelve `null` al terminar).
 - [x] `InMemorySource`: recibe `List<Event>` y la recorre con un `Iterator`.
 - [ ] `WindowsLogSource(origin, maxEvents)`:
-  - [ ] Ejecutar `wevtutil qe <origin> /c:<maxEvents> /rd:true /f:xml /e:Events` con
+  - [x] Ejecutar `wevtutil qe <origin> /c:<maxEvents> /rd:true /f:xml /e:Events` con
         `ProcessBuilder` (añadir `/lf:true` si el origen termina en `.evtx`).
   - [ ] Si `wevtutil` termina con error, lanzar `IllegalStateException` con su mensaje.
   - [ ] Decodificar la salida con la página de códigos ANSI (`sun.jnu.encoding`).
