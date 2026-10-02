@@ -1,0 +1,103 @@
+package pipeline;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import model.Event;
+import model.EventSource;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+/**
+ * ConcreteComponent que lee eventos reales de Windows con wevtutil y los convierte en Event.
+ */
+public class WindowsLogSource implements EventSource {
+
+    private final String origin;
+    private final int maxEvents;
+    private Iterator<Event> iterator;
+
+    public WindowsLogSource(String origin, int maxEvents) {
+        this.origin = origin;
+        this.maxEvents = maxEvents;
+    }
+
+    @Override
+    public Event next() {
+        if (iterator == null) {
+            iterator = readEvents().iterator();
+        }
+        if (iterator.hasNext()) {
+            return iterator.next();
+        }
+        return null;
+    }
+
+    private List<Event> readEvents() {
+        String xml = runWevtutil();
+        List<Event> events = new ArrayList<>();
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            Document document = factory.newDocumentBuilder().parse(new InputSource(new StringReader(xml)));
+
+            NodeList eventNodes = document.getElementsByTagName("Event");
+            for (int i = 0; i < eventNodes.getLength(); i++) {
+                Element eventNode = (Element) eventNodes.item(i);
+                String eventId = eventNode.getElementsByTagName("EventID").item(0).getTextContent();
+                Event event = new Event(Integer.parseInt(eventId.trim()));
+
+                NodeList fields = eventNode.getElementsByTagName("Data");
+                for (int j = 0; j < fields.getLength(); j++) {
+                    Element field = (Element) fields.item(j);
+                    String name = field.getAttribute("Name");
+                    if (name.equals("ProcessName") || name.equals("NewProcessName")) {
+                        event.put("process", field.getTextContent());
+                    } else if (name.equals("ObjectName")) {
+                        event.put("file", field.getTextContent());
+                    }
+                }
+                events.add(event);
+            }
+        } catch (ParserConfigurationException | SAXException | IOException e) {
+            throw new IllegalStateException("Could not read the wevtutil XML: " + e.getMessage());
+        }
+        Collections.reverse(events);
+        return events;
+    }
+
+    private String runWevtutil() {
+        List<String> command = new ArrayList<>();
+        command.add("wevtutil");
+        command.add("qe");
+        command.add(origin);
+        if (origin.toLowerCase().endsWith(".evtx")) {
+            command.add("/lf:true");
+        }
+        command.add("/c:" + maxEvents);
+        command.add("/rd:true");
+        command.add("/f:xml");
+        command.add("/e:Events");
+
+        try {
+            Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
+            String windowsEncoding = System.getProperty("sun.jnu.encoding", "windows-1252");
+            String output = new String(process.getInputStream().readAllBytes(), Charset.forName(windowsEncoding));
+            if (process.waitFor() != 0) {
+                throw new IllegalStateException("wevtutil could not read '" + origin + "': " + output.trim());
+            }
+            return output;
+        } catch (IOException | InterruptedException e) {
+            throw new IllegalStateException("Could not run wevtutil: " + e.getMessage());
+        }
+    }
+}
