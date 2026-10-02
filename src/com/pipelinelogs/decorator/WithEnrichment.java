@@ -1,3 +1,8 @@
+package com.pipelinelogs.decorator;
+
+import com.pipelinelogs.model.Event;
+import com.pipelinelogs.source.EventSource;
+
 public class WithEnrichment extends SourceDecorator {
 
     public WithEnrichment(EventSource source) {

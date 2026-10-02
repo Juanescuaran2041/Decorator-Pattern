@@ -1,3 +1,6 @@
+package com.pipelinelogs.source;
+
+import com.pipelinelogs.model.Event;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.Charset;
@@ -42,13 +45,11 @@ public class WindowsLogSource implements EventSource {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
             Document document = factory.newDocumentBuilder().parse(new InputSource(new StringReader(xml)));
-
             NodeList eventNodes = document.getElementsByTagName("Event");
             for (int i = 0; i < eventNodes.getLength(); i++) {
                 Element eventNode = (Element) eventNodes.item(i);
                 String eventId = eventNode.getElementsByTagName("EventID").item(0).getTextContent();
                 Event event = new Event(Integer.parseInt(eventId.trim()));
-
                 NodeList fields = eventNode.getElementsByTagName("Data");
                 for (int j = 0; j < fields.getLength(); j++) {
                     Element field = (Element) fields.item(j);
@@ -80,7 +81,6 @@ public class WindowsLogSource implements EventSource {
         command.add("/rd:true");
         command.add("/f:xml");
         command.add("/e:Events");
-
         try {
             Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
             String windowsEncoding = System.getProperty("sun.jnu.encoding", "windows-1252");

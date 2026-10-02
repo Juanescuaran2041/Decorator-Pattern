@@ -1,3 +1,5 @@
+package com.pipelinelogs.model;
+
 import java.util.HashMap;
 import java.util.Map;
 

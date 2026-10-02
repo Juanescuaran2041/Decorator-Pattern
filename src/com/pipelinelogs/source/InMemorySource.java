@@ -1,3 +1,6 @@
+package com.pipelinelogs.source;
+
+import com.pipelinelogs.model.Event;
 import java.util.Iterator;
 import java.util.List;
 

@@ -1,3 +1,7 @@
+package com.pipelinelogs.decorator;
+
+import com.pipelinelogs.model.Event;
+import com.pipelinelogs.source.EventSource;
 import java.util.HashMap;
 import java.util.Map;
 
