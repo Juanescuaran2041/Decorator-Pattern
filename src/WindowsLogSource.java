@@ -33,7 +33,9 @@ public class WindowsLogSource implements EventSource {
         try {
             Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
             String output = new String(process.getInputStream().readAllBytes());
-            process.waitFor();
+            if (process.waitFor() != 0) {
+                throw new IllegalStateException("wevtutil could not read '" + origin + "': " + output.trim());
+            }
             return output;
         } catch (IOException | InterruptedException e) {
             throw new IllegalStateException("Could not run wevtutil: " + e.getMessage());
