@@ -1,50 +1,50 @@
 /**
- * Cliente de consola: ensambla el pipeline, lo recorre e imprime las alertas.
+ * Console client: assembles the pipeline, traverses it and prints the alerts.
  *
- * Sin argumentos usa los datos de prueba. Con un argumento lee eventos reales de Windows:
- *   java -cp out Main Security              (requiere consola de administrador)
- *   java -cp out Main C:\ruta\archivo.evtx
+ * Without arguments it uses the test data. With one argument it reads real Windows events:
+ *   java -cp out Main Security              (requires administrator console)
+ *   java -cp out Main C:\path\file.evtx
  */
 public class Main {
 
-    private static final int MAXIMO_EVENTOS_REALES = 5000;
+    private static final int MAX_REAL_EVENTS = 5000;
 
     public static void main(String[] args) {
-        FuenteEventos fuenteBase;
+        EventSource baseSource;
         if (args.length > 0) {
-            fuenteBase = new FuenteLogWindows(args[0], MAXIMO_EVENTOS_REALES);
+            baseSource = new WindowsLogSource(args[0], MAX_REAL_EVENTS);
         } else {
-            fuenteBase = new FuenteEnMemoria(DatosPrueba.generar());
+            baseSource = new InMemorySource(TestData.generate());
         }
 
-        // De afuera hacia adentro: puntaje -> filtro -> enriquecimiento -> normalización -> fuente.
-        FuenteEventos pipeline =
-                new ConPuntajeRiesgo(
-                        new ConFiltro(
-                                new ConEnriquecimiento(
-                                        new ConNormalizacion(fuenteBase))));
+        // From outside to inside: score -> filter -> enrichment -> normalization -> source.
+        EventSource pipeline =
+                new WithRiskScore(
+                        new WithFilter(
+                                new WithEnrichment(
+                                        new WithNormalization(baseSource))));
 
-        int procesados = 0;
-        int alertas = 0;
-        Evento evento;
+        int processed = 0;
+        int alerts = 0;
+        Event event;
         try {
-            while ((evento = pipeline.siguiente()) != null) {
-                procesados++;
-                if (evento.getPuntaje() >= 50) {
-                    alertas++;
-                    System.out.printf("ALERTA puntaje=%d categoria=%s proceso=%s archivo=%s%n",
-                            evento.getPuntaje(), evento.get("categoria"),
-                            evento.get("proceso"), evento.get("archivo"));
+            while ((event = pipeline.next()) != null) {
+                processed++;
+                if (event.getScore() >= 50) {
+                    alerts++;
+                    System.out.printf("ALERT score=%d category=%s process=%s file=%s%n",
+                            event.getScore(), event.get("category"),
+                            event.get("process"), event.get("file"));
                 }
             }
         } catch (IllegalStateException e) {
-            // Por ejemplo, leer el log Security sin permisos de administrador.
+            // For example, reading the Security log without administrator rights.
             System.out.println("Error: " + e.getMessage());
             return;
         }
 
         System.out.println("----------------------------------------");
-        System.out.println("Eventos procesados: " + procesados);
-        System.out.println("Alertas: " + alertas);
+        System.out.println("Processed events: " + processed);
+        System.out.println("Alerts: " + alerts);
     }
 }
