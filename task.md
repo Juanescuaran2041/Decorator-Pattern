@@ -43,7 +43,7 @@ Se avanza tarea por tarea y se hace un commit al terminar cada una.
 
 - [x] `EventSource`: interfaz con `Event next()` (devuelve `null` al terminar).
 - [x] `InMemorySource`: recibe `List<Event>` y la recorre con un `Iterator`.
-- [ ] `WindowsLogSource(origin, maxEvents)`:
+- [x] `WindowsLogSource(origin, maxEvents)`:
   - [x] Ejecutar `wevtutil qe <origin> /c:<maxEvents> /rd:true /f:xml /e:Events` con
         `ProcessBuilder` (añadir `/lf:true` si el origen termina en `.evtx`).
   - [x] Si `wevtutil` termina con error, lanzar `IllegalStateException` con su mensaje.
@@ -51,7 +51,7 @@ Se avanza tarea por tarea y se hace un commit al terminar cada una.
   - [x] Leer el XML con `DocumentBuilder` (DOCTYPE deshabilitado).
   - [x] Mapear `EventID` → `id`, `ProcessName`/`NewProcessName` → `process`, `ObjectName` → `file`.
   - [x] Invertir la lista para procesar en orden cronológico.
-  - [ ] Leer los eventos la primera vez que se llama a `next()`.
+  - [x] Leer los eventos la primera vez que se llama a `next()`.
 
 ### 3. Decorator abstracto
 

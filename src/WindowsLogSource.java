@@ -3,6 +3,7 @@ import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -16,6 +17,7 @@ public class WindowsLogSource implements EventSource {
 
     private final String origin;
     private final int maxEvents;
+    private Iterator<Event> iterator;
 
     public WindowsLogSource(String origin, int maxEvents) {
         this.origin = origin;
@@ -24,6 +26,12 @@ public class WindowsLogSource implements EventSource {
 
     @Override
     public Event next() {
+        if (iterator == null) {
+            iterator = readEvents().iterator();
+        }
+        if (iterator.hasNext()) {
+            return iterator.next();
+        }
         return null;
     }
 
