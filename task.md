@@ -62,7 +62,7 @@ Work goes task by task, with one commit for each completed subtask.
 
 - [x] `WithNormalization`: `process` → executable name in lower case
       (`C:\Windows\System32\CMD.EXE` → `cmd.exe`).
-- [ ] `WithEnrichment`: `category` field based on the Event ID
+- [x] `WithEnrichment`: `category` field based on the Event ID
       (4663 `FILE_ACCESS`, 4660 `FILE_DELETE`, 4688 `PROCESS_CREATION`,
       1102 `LOG_CLEARED`, other `OTHER`).
 - [ ] `WithFilter`: loop that drops `OTHER` events until it finds a valid one or `null`.
