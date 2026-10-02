@@ -67,7 +67,7 @@ Work goes task by task, with one commit for each completed subtask.
       1102 `LOG_CLEARED`, other `OTHER`).
 - [x] `WithFilter`: loop that drops `OTHER` events until it finds a valid one or `null`.
 - [ ] `WithRiskScore` (stateful):
-  - [ ] Count `FILE_ACCESS` events per process in `Map<String, Integer> accessCountWithoutTimeWindow`;
+  - [x] Count `FILE_ACCESS` events per process in `Map<String, Integer> accessCountWithoutTimeWindow`;
         over 100, +50.
   - [ ] `file` ends with `.locked`, `.encrypted` or `.crypt`: +30.
   - [ ] Category `LOG_CLEARED`: +50.
