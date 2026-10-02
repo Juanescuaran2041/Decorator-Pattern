@@ -80,7 +80,7 @@ Work goes task by task, with one commit for each completed subtask.
   - [x] 3 events 4688 from `C:\Windows\System32\CMD.EXE`.
   - [x] 1 event 1102 (audit log cleared).
   - [x] 10 events 4624 (logon).
-- [ ] `EventSourceFactory.create(origin)`: `"test"` or empty → `InMemorySource`;
+- [x] `EventSourceFactory.create(origin)`: `"test"` or empty → `InMemorySource`;
       any other value → `WindowsLogSource(origin, 5000)`.
 
 ### 6. Main (console)
