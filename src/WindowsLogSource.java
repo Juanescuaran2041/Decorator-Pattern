@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +33,8 @@ public class WindowsLogSource implements EventSource {
 
         try {
             Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
-            String output = new String(process.getInputStream().readAllBytes());
+            String windowsEncoding = System.getProperty("sun.jnu.encoding", "windows-1252");
+            String output = new String(process.getInputStream().readAllBytes(), Charset.forName(windowsEncoding));
             if (process.waitFor() != 0) {
                 throw new IllegalStateException("wevtutil could not read '" + origin + "': " + output.trim());
             }
