@@ -36,6 +36,10 @@ public class WithRiskScore extends SourceDecorator {
                 event.addScore(30);
             }
         }
+
+        if ("LOG_CLEARED".equals(category)) {
+            event.addScore(50);
+        }
         return event;
     }
 }

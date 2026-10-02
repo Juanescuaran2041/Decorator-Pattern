@@ -66,11 +66,11 @@ Work goes task by task, with one commit for each completed subtask.
       (4663 `FILE_ACCESS`, 4660 `FILE_DELETE`, 4688 `PROCESS_CREATION`,
       1102 `LOG_CLEARED`, other `OTHER`).
 - [x] `WithFilter`: loop that drops `OTHER` events until it finds a valid one or `null`.
-- [ ] `WithRiskScore` (stateful):
+- [x] `WithRiskScore` (stateful):
   - [x] Count `FILE_ACCESS` events per process in `Map<String, Integer> accessCountWithoutTimeWindow`;
         over 100, +50.
   - [x] `file` ends with `.locked`, `.encrypted` or `.crypt`: +30.
-  - [ ] Category `LOG_CLEARED`: +50.
+  - [x] Category `LOG_CLEARED`: +50.
 
 ### 5. Test data and Factory
 
