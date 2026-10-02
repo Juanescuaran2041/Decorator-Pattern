@@ -15,17 +15,22 @@ public class Main {
 
         int processed = 0;
         int alerts = 0;
-        Event event = pipeline.next();
-        while (event != null) {
-            processed++;
-            if (event.getScore() >= 50) {
-                alerts++;
-                System.out.println("ALERT score=" + event.getScore()
-                        + " category=" + event.get("category")
-                        + " process=" + event.get("process")
-                        + " file=" + event.get("file"));
+        try {
+            Event event = pipeline.next();
+            while (event != null) {
+                processed++;
+                if (event.getScore() >= 50) {
+                    alerts++;
+                    System.out.println("ALERT score=" + event.getScore()
+                            + " category=" + event.get("category")
+                            + " process=" + event.get("process")
+                            + " file=" + event.get("file"));
+                }
+                event = pipeline.next();
             }
-            event = pipeline.next();
+        } catch (IllegalStateException e) {
+            System.out.println("Error: " + e.getMessage());
+            return;
         }
 
         System.out.println("----------------------------------------");
