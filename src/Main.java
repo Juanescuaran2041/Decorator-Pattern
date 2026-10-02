@@ -12,5 +12,16 @@ public class Main {
                         new WithFilter(
                                 new WithEnrichment(
                                         new WithNormalization(source))));
+
+        Event event = pipeline.next();
+        while (event != null) {
+            if (event.getScore() >= 50) {
+                System.out.println("ALERT score=" + event.getScore()
+                        + " category=" + event.get("category")
+                        + " process=" + event.get("process")
+                        + " file=" + event.get("file"));
+            }
+            event = pipeline.next();
+        }
     }
 }
