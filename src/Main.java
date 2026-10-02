@@ -6,5 +6,11 @@ public class Main {
             origin = args[0];
         }
         EventSource source = EventSourceFactory.create(origin);
+
+        EventSource pipeline =
+                new WithRiskScore(
+                        new WithFilter(
+                                new WithEnrichment(
+                                        new WithNormalization(source))));
     }
 }

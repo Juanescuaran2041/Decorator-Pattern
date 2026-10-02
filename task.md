@@ -86,7 +86,7 @@ Work goes task by task, with one commit for each completed subtask.
 ### 6. Main (console)
 
 - [x] Origin: `args[0]` if present, otherwise `"test"`; create the source with `EventSourceFactory`.
-- [ ] Assemble the pipeline by hand (outside to inside):
+- [x] Assemble the pipeline by hand (outside to inside):
       `WithRiskScore → WithFilter → WithEnrichment → WithNormalization → Source`.
 - [ ] Print an `ALERT` line for every event with a score >= 50
       (score, category, process and file).
