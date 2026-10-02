@@ -90,7 +90,7 @@ Work goes task by task, with one commit for each completed subtask.
       `WithRiskScore → WithFilter → WithEnrichment → WithNormalization → Source`.
 - [x] Print an `ALERT` line for every event with a score >= 50
       (score, category, process and file).
-- [ ] Print a summary: processed events and number of alerts.
+- [x] Print a summary: processed events and number of alerts.
 - [ ] If the source fails, print `Error: <message>` instead of the stack trace.
 
 ### 7. Builder and WebServer

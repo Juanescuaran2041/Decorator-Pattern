@@ -13,9 +13,13 @@ public class Main {
                                 new WithEnrichment(
                                         new WithNormalization(source))));
 
+        int processed = 0;
+        int alerts = 0;
         Event event = pipeline.next();
         while (event != null) {
+            processed++;
             if (event.getScore() >= 50) {
+                alerts++;
                 System.out.println("ALERT score=" + event.getScore()
                         + " category=" + event.get("category")
                         + " process=" + event.get("process")
@@ -23,5 +27,9 @@ public class Main {
             }
             event = pipeline.next();
         }
+
+        System.out.println("----------------------------------------");
+        System.out.println("Processed events: " + processed);
+        System.out.println("Alerts: " + alerts);
     }
 }
