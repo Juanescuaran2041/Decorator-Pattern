@@ -65,7 +65,7 @@ Work goes task by task, with one commit for each completed subtask.
 - [x] `WithEnrichment`: `category` field based on the Event ID
       (4663 `FILE_ACCESS`, 4660 `FILE_DELETE`, 4688 `PROCESS_CREATION`,
       1102 `LOG_CLEARED`, other `OTHER`).
-- [ ] `WithFilter`: loop that drops `OTHER` events until it finds a valid one or `null`.
+- [x] `WithFilter`: loop that drops `OTHER` events until it finds a valid one or `null`.
 - [ ] `WithRiskScore` (stateful):
   - [ ] Count `FILE_ACCESS` events per process in `Map<String, Integer> accessCountWithoutTimeWindow`;
         over 100, +50.
