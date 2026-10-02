@@ -55,7 +55,7 @@ Work goes task by task, with one commit for each completed subtask.
 
 ### 3. Abstract decorator
 
-- [ ] `SourceDecorator`: abstract class that implements `EventSource`, with
+- [x] `SourceDecorator`: abstract class that implements `EventSource`, with
       `protected final EventSource source` received in the constructor.
 
 ### 4. Concrete decorators
